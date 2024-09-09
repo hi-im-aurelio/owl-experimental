@@ -1,3 +1,5 @@
+<img height="302px" width="302px" src="https://github.com/fariosofernando/run-small-dropbox-package/raw/master/static/logo.png">
+
 **Project Owl (Experimental)**
 
 A Rust-based tool designed to automate the backup and synchronization of local Git repositories.
