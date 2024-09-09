@@ -1,4 +1,4 @@
-<img height="302px" width="302px" src="https://github.com/fariosofernando/run-small-dropbox-package/raw/master/static/logo.png">
+<img height="302px" width="302px" src="https://github.com/fariosofernando/owl-experimental/raw/master/static/logo.png">
 
 **Project Owl (Experimental)**
 
