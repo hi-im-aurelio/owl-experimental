@@ -1,4 +1,4 @@
-<img width="302px" src="https://github.com/fariosofernando/owl-experimental/raw/master/static/logo.png">
+<img width="302px" src="https://github.com/fariosofernando/owl-experimental/raw/master/static/icone.jpg">
 
 **Project Owl (Experimental)**
 
