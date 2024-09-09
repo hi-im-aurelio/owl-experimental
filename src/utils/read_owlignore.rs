@@ -11,7 +11,6 @@ pub fn read_owlignore() -> io::Result<Vec<String>> {
         let file = fs::File::open(OWLIGNORE_PATH)?;
         let reader = io::BufReader::new(file);
 
-        // Lê linha por linha
         for line in reader.lines() {
             let line = line?;
             if !line.trim().is_empty() {
