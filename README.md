@@ -7,3 +7,5 @@ It creates a secure clone of the original repository, handles file copy operatio
 `.owlignore` patterns, and sets files in the destination directory to read-only to prevent
 unauthorized modifications. Ideal for maintaining reliable backups and ensuring local changes are
 preserved without conflicts.
+
+# DOC (in development)
