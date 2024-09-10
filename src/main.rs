@@ -14,7 +14,8 @@ use clap::{command, Arg, ArgMatches, Command};
 */
 
 fn main() {
-    let _match_result: ArgMatches = command!()
+    let match_result: ArgMatches = command!()
+        .version("1.0.1")
         .subcommand(
             Command::new("init")
                 .about("Initializes a copy of the original repository, locally and remotely")
@@ -71,18 +72,47 @@ fn main() {
         .about("A Rust-based tool designed to automate the backup and synchronization of local Git repositories.")
         .get_matches();
 
-    // // let pet_args = match_result.subcommand_matches("register-pet"); // let person = match_result.subcommand_matches("register-person"); // if person.unwrap().contains_id("firstname") { //     println!( //         "Firstname: {}", //         person.unwrap().get_one::<String>("firstname").unwrap() //     ); // } // if person.unwrap().contains_id("lastname") { //     println!( //         "Lastname: {}", //         person.unwrap().get_one::<String>("lastname").unwrap() //     ); // }
-    // println!(
-    //     "Does pet name exist? {}",
-    //     pet_args.unwrap().contains_id("petname")
-    // );
-
-    // println!(
-    //     "Does pet name exist? {}",
-    //     pet_args.unwrap().get_one::<String>("petname").unwrap()
-    // );
-
-    // if pet_args.unwrap().contains_id("pet-name") {
-    //     println!("Does pet name exist? {}", true);
-    // }
+    if let Some(matches) = match_result.subcommand_matches("init") {
+        if let Some(path) = matches.get_one::<String>("project-path") {
+            if path.is_empty() {
+                println!("please, you need provide a path to initalize a clone");
+            } else {
+                println!("Provide path: {}", path);
+            }
+        }
+    } else if let Some(matches) = match_result.subcommand_matches("clone") {
+        if let Some(_) = matches.get_one::<String>("list") {
+            println!("listing you clones...");
+        } else if let Some(remote_address) = matches.get_one::<String>("configure-remote") {
+            if remote_address.is_empty() {
+                println!("you need provide a remote value");
+            } else {
+                println!("configuring your remote address: {}", remote_address);
+            }
+        } else {
+            println!("???");
+        }
+    } else if let Some(x) = match_result.subcommand_matches("guard") {
+        if let Some(clone) = x.get_one::<String>("clone-name") {
+            if clone.is_empty() {
+                println!("you need provide a clone to initialize a gruard");
+            } else {
+                println!("you clone is founded...");
+            }
+        } else if let Some(clone) = x.get_one::<String>("look-up") {
+            if clone.is_empty() {
+                println!("you need provide a clone to initialize a gruard");
+            } else {
+                println!("you clone is up now...");
+            }
+        } else if let Some(clone) = x.get_one::<String>("unbind") {
+            if clone.is_empty() {
+                println!("you need provide a clone ");
+            } else {
+                println!("you clone is down now...");
+            }
+        } else {
+            println!("how do you want to proceed?");
+        }
+    }
 }
