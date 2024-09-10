@@ -1,5 +1,4 @@
 use git2::Repository;
-use std::path::Path;
 use std::process::Command;
 
 pub fn add_remote_origin_if_not_exists(
