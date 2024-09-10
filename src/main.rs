@@ -1,21 +1,14 @@
 use clap::{command, Arg, ArgMatches, Command};
+mod commands;
+mod utils;
+use std::io;
+use std::path::{Path, PathBuf};
 
-/*
-    1. owl init, comando para criar o clone de um repositorio git
-        - deve receber project_path (a pasta do repositorio git)
-        - deve pegar o nome da pasta do repositorio git, e criar essa mesma pasta em .owl/clones
+fn main() -> io::Result<()> {
+    let owl_clone_path = Path::new("/home/ivy/.owl/clones");
 
-    2. owl clone --list, deve lista as pastas (ou clones), na pasta .owl/clones
-    3. owl clone --configure-remote, deve configurar a orgin
-    4. owl guard --clone <clone-name>, deve iniciar o processo de cron no segundo plano.
-    5. owl guard --look-up, deve listar todos processos relacionado ao owl, ou seja, todos os processos que estão a correr em segundo plano, ou que esteja a ser vigiados
-    6. owl guard --unbind <clone-name> deve remover o processo relacionado ao clone que esteja a correr em segundo plano.
-
-*/
-
-fn main() {
     let match_result: ArgMatches = command!()
-        .version("1.0.1")
+        .version("1.0.0")
         .subcommand(
             Command::new("init")
                 .about("Initializes a copy of the original repository, locally and remotely")
@@ -76,8 +69,31 @@ fn main() {
         if let Some(path) = matches.get_one::<String>("project-path") {
             if path.is_empty() {
                 println!("please, you need provide a path to initalize a clone");
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "Empty project path",
+                ));
             } else {
-                println!("Provide path: {}", path);
+                let ignore_patterns = utils::read_owlignore::read_owlignore()?;
+
+                // obetendo o nome do projeto (ultima parte do caminho)
+                let project_name = Path::new(path)
+                    .file_name()
+                    .ok_or_else(|| {
+                        io::Error::new(io::ErrorKind::InvalidInput, "Invalid project path")
+                    })?
+                    .to_str()
+                    .ok_or_else(|| {
+                        io::Error::new(io::ErrorKind::InvalidInput, "Invalid project name")
+                    })?;
+
+                let destination_path = owl_clone_path.join(project_name);
+
+                commands::clone::clone(
+                    Path::new(path),
+                    destination_path.as_path(),
+                    &ignore_patterns,
+                )?;
             }
         }
     } else if let Some(matches) = match_result.subcommand_matches("clone") {
@@ -86,6 +102,10 @@ fn main() {
         } else if let Some(remote_address) = matches.get_one::<String>("configure-remote") {
             if remote_address.is_empty() {
                 println!("you need provide a remote value");
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "Empty remote address",
+                ));
             } else {
                 println!("configuring your remote address: {}", remote_address);
             }
@@ -95,24 +115,38 @@ fn main() {
     } else if let Some(x) = match_result.subcommand_matches("guard") {
         if let Some(clone) = x.get_one::<String>("clone-name") {
             if clone.is_empty() {
-                println!("you need provide a clone to initialize a gruard");
+                println!("you need provide a clone to initialize a guard");
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "Empty clone name",
+                ));
             } else {
-                println!("you clone is founded...");
+                println!("your clone is found...");
             }
         } else if let Some(clone) = x.get_one::<String>("look-up") {
             if clone.is_empty() {
-                println!("you need provide a clone to initialize a gruard");
+                println!("you need provide a clone to look up");
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "Empty clone name",
+                ));
             } else {
-                println!("you clone is up now...");
+                println!("your clone is up now...");
             }
         } else if let Some(clone) = x.get_one::<String>("unbind") {
             if clone.is_empty() {
-                println!("you need provide a clone ");
+                println!("you need provide a clone");
+                return Err(io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    "Empty clone name",
+                ));
             } else {
-                println!("you clone is down now...");
+                println!("your clone is down now...");
             }
         } else {
             println!("how do you want to proceed?");
         }
     }
+
+    Ok(())
 }
