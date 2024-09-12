@@ -1,8 +1,9 @@
 use clap::{command, Arg, ArgMatches, Command};
+use std::io;
+use std::path::Path;
+
 mod commands;
 mod utils;
-use std::io;
-use std::path::{Path, PathBuf};
 
 fn main() -> io::Result<()> {
     let owl_clone_path = Path::new("/home/ivy/.owl/clones");
