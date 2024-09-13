@@ -1,4 +1,5 @@
 use clap::{command, Arg, ArgMatches, Command};
+use std::fmt::format;
 use std::io;
 use std::path::Path;
 
@@ -6,7 +7,7 @@ mod commands;
 mod utils;
 
 fn main() -> io::Result<()> {
-    let owl_clone_path = Path::new("/home/ivy/.owl/clones");
+    let owl_path = utils::get_owl_path::owl_path();
 
     let match_result: ArgMatches = command!()
         .version("1.0.0")
@@ -88,13 +89,13 @@ fn main() -> io::Result<()> {
                         io::Error::new(io::ErrorKind::InvalidInput, "Invalid project name")
                     })?;
 
-                let destination_path = owl_clone_path.join(project_name);
+                let des = owl_path.join(format!("{}/{}", "clones", project_name));
+                commands::clone::clone(Path::new(path), des.as_path(), &ignore_patterns)?;
 
-                commands::clone::clone(
-                    Path::new(path),
-                    destination_path.as_path(),
-                    &ignore_patterns,
-                )?;
+                println!(
+                    "Your clone was created at: {}/ You can use `owl clone --list`, to view.",
+                    des.display()
+                );
             }
         }
     } else if let Some(matches) = match_result.subcommand_matches("clone") {
