@@ -1,5 +1,5 @@
 use clap::{command, Arg, ArgMatches, Command};
-use std::fmt::format;
+
 use std::io;
 use std::path::Path;
 
@@ -27,18 +27,18 @@ fn main() -> io::Result<()> {
             Command::new("clone")
                 .about("Initialize a clone and manage a clone.")
                 .arg(
-                    Arg::new("list")
-                        .long("list")
+                    Arg::new("list-clones")
                         .short('l')
+                        .long("list")
                         .help("Lists all clones made by owl. You can find these repositories in: $HOME/.clones/.")
-                        .aliases(["list"]),
+                        .num_args(0)
                 )
                 .arg(
                     Arg::new("configure-remote")
                         .short('C')
                         .long("configure-remote")
                         .help("Configures the remote source, between the local clone and the remote clone.")
-                        .aliases(["remote"]),
+                        .num_args(0)
                 )
         )
         .subcommand(
@@ -78,7 +78,6 @@ fn main() -> io::Result<()> {
             } else {
                 let ignore_patterns = utils::read_owlignore::read_owlignore()?;
 
-                // obetendo o nome do projeto (ultima parte do caminho)
                 let project_name = Path::new(path)
                     .file_name()
                     .ok_or_else(|| {
@@ -99,20 +98,20 @@ fn main() -> io::Result<()> {
             }
         }
     } else if let Some(matches) = match_result.subcommand_matches("clone") {
-        if let Some(_) = matches.get_one::<String>("list") {
-            println!("listing you clones...");
-        } else if let Some(remote_address) = matches.get_one::<String>("configure-remote") {
-            if remote_address.is_empty() {
-                println!("you need provide a remote value");
-                return Err(io::Error::new(
-                    io::ErrorKind::InvalidInput,
-                    "Empty remote address",
-                ));
-            } else {
-                println!("configuring your remote address: {}", remote_address);
+        if matches.get_flag("list-clones") {
+            println!("Listing your clones...");
+            match commands::list_clones::list_clones() {
+                Ok(clones) => {
+                    for clone in &clones {
+                        println!("{}", clone.display());
+                    }
+                }
+                Err(err) => {
+                    println!("Error listing clones: {}", err);
+                }
             }
-        } else {
-            println!("???");
+        } else if matches.get_flag("configure-remote") {
+            println!("Configuring your remote address:");
         }
     } else if let Some(x) = match_result.subcommand_matches("guard") {
         if let Some(clone) = x.get_one::<String>("clone-name") {
