@@ -1,8 +1,8 @@
 use git2::Repository;
-use std::process::Command;
+use std::path::PathBuf;
 
 pub fn add_remote_origin_if_not_exists(
-    repo_path: &str,
+    repo_path: &PathBuf,
     remote_url: &str,
 ) -> Result<(), git2::Error> {
     let repo = Repository::open(repo_path)?;
@@ -10,25 +10,11 @@ pub fn add_remote_origin_if_not_exists(
     if repo.find_remote("origin").is_err() {
         println!("Remote 'origin' not found. Adding...");
 
-        let output = Command::new("git")
-            .arg("remote")
-            .arg("add")
-            .arg("origin")
-            .arg(remote_url)
-            .current_dir(repo_path)
-            .output()
-            .expect("Failed to add remote origin");
+        repo.remote("origin", remote_url)?;
 
-        if output.status.success() {
-            println!("Remote 'origin' added successfully");
-        } else {
-            eprintln!(
-                "Error adding remote 'origin': {}",
-                String::from_utf8_lossy(&output.stderr)
-            );
-        }
+        println!("Remote 'origin' added successfully.");
     } else {
-        println!("Remote 'origin'already exists.");
+        println!("Remote 'origin' already exists.");
     }
 
     Ok(())
