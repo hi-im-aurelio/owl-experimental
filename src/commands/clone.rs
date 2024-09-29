@@ -6,7 +6,6 @@ use crate::utils;
 
 pub fn clone(source: &Path, destination: &Path, ignore_patterns: &[String]) -> io::Result<()> {
     if source.is_dir() {
-        // Cria o diretório de destino e todos os diretórios pai necessários
         if let Err(e) = fs::create_dir_all(destination) {
             eprintln!(
                 "Failed to create directory '{}': {}",
@@ -37,7 +36,6 @@ pub fn clone(source: &Path, destination: &Path, ignore_patterns: &[String]) -> i
             }
         }
     } else if source.is_file() {
-        // Tenta copiar o arquivo
         if let Err(e) = fs::copy(source, destination) {
             eprintln!(
                 "Failed to copy file from '{}' to '{}': {}",
@@ -48,15 +46,16 @@ pub fn clone(source: &Path, destination: &Path, ignore_patterns: &[String]) -> i
             return Err(e);
         }
 
-        // Define permissões somente leitura
-        if let Err(e) = utils::permissions::set_read_only_permissions(destination) {
-            eprintln!(
-                "Failed to set read-only permissions for '{}': {}",
-                destination.display(),
-                e
-            );
-            return Err(e);
-        }
+        // I'm commenting on this script because I'm having a problem with replacing cloned files.
+        //
+        // if let Err(e) = utils::permissions::set_read_only_permissions(destination) {
+        //     eprintln!(
+        //         "Failed to set read-only permissions for '{}': {}",
+        //         destination.display(),
+        //         e
+        //     );
+        //     return Err(e);
+        // }
     }
 
     Ok(())
