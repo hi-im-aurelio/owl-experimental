@@ -1,0 +1,3 @@
+interval 2
+model "/home/user/project/original/path"
+remote https://github.com/fariosofernando/authentication.git

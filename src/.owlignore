@@ -1,5 +1,7 @@
 .git
 .node_modules
+prisma/generated
+.gitmodules
 README.md
 .env
 test
@@ -8,3 +10,4 @@ tests
 .tests
 shared
 shared_lib
+builtins

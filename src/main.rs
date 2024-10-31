@@ -1,6 +1,5 @@
 use clap::{command, Arg, ArgMatches, Command};
-
-use std::io;
+use std::io::{self, Write};
 use std::path::Path;
 
 mod commands;
@@ -88,12 +87,16 @@ fn main() -> io::Result<()> {
                         io::Error::new(io::ErrorKind::InvalidInput, "Invalid project name")
                     })?;
 
-                let des = owl_path.join(format!("{}/{}", "clones", project_name));
-                commands::clone::clone(Path::new(path), des.as_path(), &ignore_patterns)?;
+                let clone_path = owl_path.join(format!("{}/{}", "clones", project_name));
+                commands::clone::clone(Path::new(path), clone_path.as_path(), &ignore_patterns)?;
+
+                commands::initialize_repo::initialize_repo(
+                    clone_path.as_path().to_str().expect("UTF-8, invalid path"),
+                );
 
                 println!(
                     "Your clone was created at: {}/ You can use `owl clone --list`, to view.",
-                    des.display()
+                    clone_path.display()
                 );
             }
         }
@@ -111,7 +114,49 @@ fn main() -> io::Result<()> {
                 }
             }
         } else if matches.get_flag("configure-remote") {
-            println!("Configuring your remote address:");
+            match commands::list_clones::list_clones() {
+                Ok(clones) => {
+                    if clones.is_empty() {
+                        println!("No clones found.");
+                        return Ok(());
+                    }
+
+                    match utils::select_clone::select_clone(&clones) {
+                        Ok(selected_clone) => {
+                            println!("Selected clone: {}", selected_clone.display());
+
+                            let mut remote_address = String::new();
+                            print!("Enter the remote origin URL: ");
+                            io::stdout().flush().expect("Failed to flush stdout");
+                            io::stdin()
+                                .read_line(&mut remote_address)
+                                .expect("Failed to read input");
+
+                            let remote_address = remote_address.trim();
+
+                            if remote_address.is_empty() {
+                                eprintln!("No remote origin URL provided.");
+                                return Err(io::Error::new(
+                                    io::ErrorKind::InvalidInput,
+                                    "Empty remote URL",
+                                ));
+                            }
+
+                            match commands::add_remote_origin::add_remote_origin_if_not_exists(
+                                &selected_clone,
+                                remote_address,
+                            ) {
+                                Ok(_) => println!("Remote origin configured successfully."),
+                                Err(e) => eprintln!("Error configuring remote: {}", e),
+                            }
+                        }
+                        Err(e) => eprintln!("Error selecting clone: {}", e),
+                    }
+                }
+                Err(err) => {
+                    eprintln!("Error listing clones: {}", err);
+                }
+            }
         }
     } else if let Some(x) = match_result.subcommand_matches("guard") {
         if let Some(clone) = x.get_one::<String>("clone-name") {
@@ -122,7 +167,19 @@ fn main() -> io::Result<()> {
                     "Empty clone name",
                 ));
             } else {
-                println!("your clone is found...");
+                let paths: Vec<&Path> = vec![
+                    Path::new("/home/ivy/.owl/clones/authentication"),
+                    Path::new("/home/ivy/srv/work/piminder/api/microservices/authentication/"),
+                ];
+
+                match utils::sync_repo::sync_repo(paths[1], paths[0]) {
+                    Ok(_) => {
+                        println!("...synchronized!");
+                    }
+                    Err(err) => {
+                        println!("Error sysnc repo: {}", err);
+                    }
+                }
             }
         } else if let Some(clone) = x.get_one::<String>("look-up") {
             if clone.is_empty() {
